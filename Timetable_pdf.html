@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <title>IntellScheduler</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: #f8fafc; margin: 0; color: #1e293b; }
+    header { padding: 1rem 2rem; background: #1e293b; color: white; display: flex; justify-content: space-between; align-items: center; }
+    h1 { font-size: 1.5rem; margin: 0; }
+    main { display: grid; grid-template-columns: 400px 1fr; gap: 1rem; padding: 1rem; }
+    section { background: white; padding: 1rem; border-radius: 0.5rem; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+    h2 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+    input { padding: 0.5rem; border-radius: 0.25rem; border: 1px solid #cbd5e1; margin-bottom: 0.5rem; width: 95%; }
+    button { cursor: pointer;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    transition: background 0.2s;
+    font-weight: 500;padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+       font-size: 0.9rem;
+width:100%;}
+   select{ padding: 0.5rem; border-radius: 0.25rem; border: 1px solid #cbd5e1; margin-bottom: 0.5rem; width: 100%; }
+    button:hover { background: #2563eb; }
+    table { border-collapse: collapse; width: 100%; margin-top: 0.5rem; }
+    th, td { border: 1px solid #e2e8f0; padding: 0.5rem; text-align: center; }
+    th { background: #f1f5f9; }
+    td.dropzone { height: 60px; vertical-align: top; }
+    .lesson { background: #dbeafe; border: 1px solid #3b82f6; border-radius: 4px; padding: 2px 4px; margin: 2px; font-size: 0.75rem; }
+    .slot.unavailable { background: #ef4444; color: white; width:14.2%}
+    .legend { font-size: 0.8rem; margin-top: 0.25rem; }
+    .entity { background: #f9fafb; padding: 0.5rem; margin: 0.25rem 0; border-radius: 4px; border: 1px solid #e5e7eb; }
+    .day-toggle { cursor: pointer; padding: 4px 8px; border-radius: 4px; margin: 2px; display: inline-block; border: 1px solid #cbd5e1; }
+    .day-toggle.off { background: #ef4444; color: white; }
+    .day-toggle.on { background: #22c55e; color: white; }
+  </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+</head>
+<body>
+<header>
+  <h1>Timetable Master</h1>
+  <div>
+    <button onclick="runAlgorithm()" style="
+    background-image: linear-gradient(#2563eb, #5701ff);
+    width: auto;
+">Smart Generate</button>
+    <button onclick="exportCSV()" style="
+    width: auto;
+    margin-left: 0.5rem;
+    background-image: linear-gradient(#10b981, #53827a);
+    ">Export CSV</button>
+<button onclick="exportPDF()" style="width:auto; margin-left:0.5rem; background-image:linear-gradient(#f59e0b, #b45309);">Download PDF</button>
+
+  </div>
+</header>
+<main>
+  <section>
+    <h2>Teachers</h2>
+    <input id="newTeacher" placeholder="New Teacher">
+    <button onclick="addTeacher()">Add Teacher</button>
+    <div id="teachers"></div>
+
+    <h2>Rooms</h2>
+    <input id="newRoom" placeholder="New Room">
+    <button onclick="addRoom()">Add Room</button>
+    <div id="rooms"></div>
+
+    <h2>Subjects</h2>
+    <input id="newSubject" placeholder="New Subject">
+    <select id="subjectTeacher"></select>
+    <select id="subjectRoom"><option value="">(Auto-pick room)</option></select>
+    <input id="subjectHours" type="number" placeholder="Hours/week" min="1" value="2">
+    <label> Max 1/day<input type="checkbox" id="maxOnePerDay" style="width: auto;"></label>
+    <label> Must be consecutive<input type="checkbox" id="mustBeConsecutive" style="width: auto;"></label>
+    <button onclick="addSubject()">Add Subject</button>
+    <div id="subjects"></div>
+  </section>
+
+  <section>
+    <h2>Timetable</h2>
+    <div>
+      Days: <input id="daysInput" value="Mon,Tue,Wed,Thu,Fri" style="width:200px">
+      Periods: <input id="periodsInput" type="number" value="7" style="width:60px">
+      <button onclick="renderTable()" style="
+    width: auto;
+">Update</button>
+    </div>
+    <div id="timetable"><table><thead><tr><th>Day/Period</th><th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>P5</th><th>P6</th><th>P7</th></tr></thead><tbody><tr><td>Mon</td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td></tr><tr><td>Tue</td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td></tr><tr><td>Wed</td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td></tr><tr><td>Thu</td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td></tr><tr><td>Fri</td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td><td class="dropzone"></td></tr></tbody></table></div>
+  </section>
+</main>
+<script>
+let days = ["Mon","Tue","Wed","Thu","Fri"];
+let periodCount = 7;
+let teachers = [];
+let rooms = [];
+let subjects = [];
+let teacherAvailability = {};
+let teacherDayAvailability = {};
+let roomAvailability = {};
+let grid = [];
+
+function initGrid(){ grid = days.map(()=>Array.from({length:periodCount},()=>null)); }
+
+function addTeacher(){
+  let name = document.getElementById("newTeacher").value.trim();
+  if(!name) return;
+  teachers.push(name);
+  teacherAvailability[name] = {};
+  teacherDayAvailability[name] = {};
+  days.forEach(d => teacherDayAvailability[name][d] = true);
+  document.getElementById("newTeacher").value="";
+  renderTeachers();
+  renderSubjectOptions();
+}
+
+function addRoom(){
+  let name = document.getElementById("newRoom").value.trim();
+  if(!name) return;
+  rooms.push(name);
+  roomAvailability[name] = {};
+  document.getElementById("newRoom").value="";
+  renderRooms();
+  renderRoomOptions();
+}
+
+function addSubject(){
+  let name = document.getElementById("newSubject").value.trim();
+  let teacher = document.getElementById("subjectTeacher").value;
+  let room = document.getElementById("subjectRoom").value;
+  let hours = parseInt(document.getElementById("subjectHours").value);
+  let maxOne = document.getElementById("maxOnePerDay").checked;
+  let consecutive = document.getElementById("mustBeConsecutive").checked;
+  console.log("y");
+ // if( maxOne == true){consecutive==false;}else if( consecutive == true){maxOne==faulse;};
+  //if( maxOne == consecutive) {alert("chouse 1 sub or consiqutive"); console.log("y");return;};
+  //if(!name || !teacher) return;
+  subjects.push({name,teacher,room,hours,maxOne,consecutive});
+  document.getElementById("newSubject").value="";
+  renderSubjects();
+}
+
+function renderTeachers(){
+  let div = document.getElementById("teachers");
+  div.innerHTML = "";
+  teachers.forEach(t=>{
+    let box = document.createElement("div");
+    box.className="entity";
+    box.innerHTML=`<b>${t}</b>`;
+
+    // Day toggle buttons
+    let dayToggleContainer = document.createElement("div");
+    days.forEach(d => {
+      let btn = document.createElement("span");
+      btn.className = "day-toggle " + (teacherDayAvailability[t][d] ? "on" : "off");
+      btn.textContent = d;
+      btn.onclick = () => {
+        teacherDayAvailability[t][d] = !teacherDayAvailability[t][d];
+        btn.className = "day-toggle " + (teacherDayAvailability[t][d] ? "on" : "off");
+      };
+      dayToggleContainer.appendChild(btn);
+    });
+    box.appendChild(dayToggleContainer);
+
+    let tbl = document.createElement("table");
+    let head = `<tr><th>Day/Period</th>`;
+    for(let p=0;p<periodCount;p++) head += `<th>P${p+1}</th>`;
+    head += `</tr>`;
+    tbl.innerHTML = `<thead>${head}</thead>`;
+    let tb = document.createElement("tbody");
+    days.forEach(d=>{
+      let row = document.createElement("tr");
+      row.innerHTML = `<td>${d}</td>`;
+      for(let p=0;p<periodCount;p++){
+        let key = `${d}-${p}`;
+        let cell = document.createElement("td");
+        cell.textContent = p+1;
+        if(teacherAvailability[t][key]) cell.classList.add("unavailable");
+        cell.onclick=()=>{
+          if(teacherAvailability[t][key]){delete teacherAvailability[t][key];cell.classList.remove("unavailable");}
+          else {teacherAvailability[t][key]=true;cell.classList.add("unavailable");}
+        };
+        row.appendChild(cell);
+      }
+      tb.appendChild(row);
+    });
+    tbl.appendChild(tb);
+    box.appendChild(tbl);
+    div.appendChild(box);
+  });
+}
+
+function renderRooms(){
+  let div = document.getElementById("rooms");
+  div.innerHTML="";
+  rooms.forEach(r=>{
+    let box=document.createElement("div");
+    box.className="entity";
+    box.innerHTML=`<b>${r}</b>`;
+    let tbl=document.createElement("table");
+    let head=`<tr><th>Day/Period</th>`;
+    for(let p=0;p<periodCount;p++) head+=`<th>P${p+1}</th>`;
+    head+=`</tr>`;
+    tbl.innerHTML=`<thead>${head}</thead>`;
+    let tb=document.createElement("tbody");
+    days.forEach(d=>{
+      let row=document.createElement("tr");
+      row.innerHTML=`<td>${d}</td>`;
+      for(let p=0;p<periodCount;p++){
+        let key=`${d}-${p}`;
+        let cell=document.createElement("td");
+        cell.textContent=p+1;
+        if(roomAvailability[r][key]) cell.classList.add("unavailable");
+        cell.onclick=()=>{
+          if(roomAvailability[r][key]){delete roomAvailability[r][key];cell.classList.remove("unavailable");}
+          else {roomAvailability[r][key]=true;cell.classList.add("unavailable");}
+        };
+        row.appendChild(cell);
+      }
+      tb.appendChild(row);
+    });
+    tbl.appendChild(tb);
+    box.appendChild(tbl);
+    div.appendChild(box);
+  });
+}
+
+function renderSubjects(){
+  let div=document.getElementById("subjects");
+  div.innerHTML="";
+  subjects.forEach(s=>{
+    div.innerHTML+=`<div class='entity'>${s.name} — ${s.teacher}${s.room?" @ "+s.room:""} (${s.hours}h) ${s.maxOne?"[Max1/day]":""} ${s.consecutive?"[Consec]":""}</div>`;
+  });
+}
+
+function renderSubjectOptions(){
+  let sel=document.getElementById("subjectTeacher");
+  sel.innerHTML=teachers.map(t=>`<option value='${t}'>${t}</option>`).join("");
+}
+
+function renderRoomOptions(){
+  let sel=document.getElementById("subjectRoom");
+  sel.innerHTML = `<option value="">(Auto-pick room)</option>` + rooms.map(r=>`<option value='${r}'>${r}</option>`).join("");
+}
+
+function renderTable(){
+  days=document.getElementById("daysInput").value.split(",").map(s=>s.trim());
+  periodCount=parseInt(document.getElementById("periodsInput").value);
+  initGrid();
+  let tbl=document.createElement("table");
+  let headRow=`<tr><th>Day/Period</th>`;
+  for(let p=0;p<periodCount;p++) headRow+=`<th>P${p+1}</th>`;
+  headRow+=`</tr>`;
+  tbl.innerHTML=`<thead>${headRow}</thead>`;
+  let tb=document.createElement("tbody");
+  days.forEach(d=>{
+    let row=document.createElement("tr");
+    row.innerHTML=`<td>${d}</td>`;
+    for(let p=0;p<periodCount;p++) row.innerHTML+=`<td class='dropzone'></td>`;
+    tb.appendChild(row);
+  });
+  tbl.appendChild(tb);
+  document.getElementById("timetable").innerHTML="";
+  document.getElementById("timetable").appendChild(tbl);
+}
+
+function renderGrid(){
+  let rows=document.querySelectorAll("#timetable tbody tr");
+  days.forEach((d,di)=>{
+    let tds=rows[di].querySelectorAll("td");
+    for(let p=0;p<periodCount;p++){
+      if(p+1<tds.length){
+        let cell=tds[p+1];
+        cell.innerHTML="";
+        let lesson=grid[di][p];
+        if(lesson){
+          let div=document.createElement("div");
+          div.className="lesson";
+          div.textContent=`${lesson.subject} (${lesson.teacher}${lesson.room?" @ "+lesson.room:""})`;
+          cell.appendChild(div);
+        }
+      }
+    }
+  });
+}
+
+function runAlgorithm(){
+  initGrid();
+  subjects.forEach(subj=>{
+    let hours=subj.hours;
+    let placed=0;
+    for(let d=0;d<days.length;d++){
+      if(placed>=hours) break;
+      if(teacherDayAvailability[subj.teacher][days[d]]===false) continue;
+      for(let p=0;p<periodCount;p++){
+        if(placed>=hours) break;
+        if(grid[d][p]) continue;
+        let keyT=`${days[d]}-${p}`;
+        if(teacherAvailability[subj.teacher][keyT]) continue;
+        let room=subj.room;
+        if(!room){ room=rooms.find(r=>!roomAvailability[r][keyT] && !grid[d][p]?.room);} 
+        if(!room) continue;
+        if(roomAvailability[room][keyT]) continue;
+        grid[d][p]={subject:subj.name,teacher:subj.teacher,room};
+        placed++;
+      }
+    }
+  });
+  renderGrid();
+}
+
+function exportCSV(){
+  let csv="Day,Period,Subject,Teacher,Room\n";
+  days.forEach((d,di)=>{
+    for(let p=0;p<periodCount;p++){
+      let lesson=grid[di][p];
+      if(lesson) csv+=`${d},${p+1},${lesson.subject},${lesson.teacher},${lesson.room}\n`;
+    }
+  });
+  let blob=new Blob([csv],{type:'text/csv'});
+  let a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="timetable.csv";
+  a.click();
+}
+
+renderTable();
+function exportPDF() {
+  let { jsPDF } = window.jspdf;
+  let doc = new jsPDF();
+
+  // Build table data
+  let tableData = [];
+  days.forEach((d, di) => {
+    for (let p = 0; p < periodCount; p++) {
+      let lesson = grid[di][p];
+      if (lesson) {
+        tableData.push([
+          d,
+          `P${p + 1}`,
+          lesson.subject,
+          lesson.teacher,
+          lesson.room || ""
+        ]);
+      }
+    }
+  });
+
+  // Add table using autoTable plugin
+  doc.setFontSize(16);
+  doc.text("Timetable", 14, 15);
+
+  doc.autoTable({
+    head: [["Day", "Period", "Subject", "Teacher", "Room"]],
+    body: tableData,
+    startY: 20,
+    styles: { fontSize: 10 },
+    headStyles: { fillColor: [59, 130, 246] }
+  });
+
+  doc.save("timetable.pdf");
+}
+
+</script>
+
+
+</body></html>

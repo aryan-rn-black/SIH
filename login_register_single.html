@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduSmart - Login & Register</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: #ffffff;
+      color: #1e293b;
+      transition: background 0.5s, color 0.5s;
+    }
+    body.dark {
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+
+    .gradient-text {
+      background: linear-gradient(to right, #4f46e5, #0ea5e9);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    body.dark .gradient-text {
+      background: linear-gradient(to right, #818cf8, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Animated blobs */
+    @keyframes blob-animation {
+      0% { transform: translate(0px, 0px) scale(1); }
+      33% { transform: translate(30px, -50px) scale(1.1); }
+      66% { transform: translate(-20px, 20px) scale(0.9); }
+      100% { transform: translate(0px, 0px) scale(1); }
+    }
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      mix-blend-mode: multiply;
+      filter: blur(50px);
+      opacity: 0.7;
+      animation: blob-animation 8s infinite ease-in-out;
+      z-index: 0;
+    }
+    .blob:nth-child(1) {
+      top: 0; left: -4rem;
+      width: 18rem; height: 18rem;
+      background: #c7d2fe;
+    }
+    body.dark .blob:nth-child(1) { background: #312e81; }
+    .blob:nth-child(2) {
+      top: 0; right: -4rem;
+      width: 18rem; height: 18rem;
+      background: #bae6fd;
+      animation-delay: -2s;
+    }
+    body.dark .blob:nth-child(2) { background: #0c4a6e; }
+    .blob:nth-child(3) {
+      bottom: -2rem; left: 5rem;
+      width: 18rem; height: 18rem;
+      background: #fbcfe8;
+      animation-delay: -4s;
+    }
+    body.dark .blob:nth-child(3) { background: #831843; }
+
+    /* Navbar */
+    nav {
+      background: rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(203, 213, 225, 0.3);
+      padding: 0 1rem;
+      height: 4rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      z-index: 10;
+    }
+    body.dark nav {
+      background: rgba(30, 41, 59, 0.3);
+      border-color: rgba(71, 85, 105, 0.3);
+    }
+
+    nav .logo {
+      display: flex;
+      align-items: center;
+      font-weight: bold;
+      font-size: 1.2rem;
+      gap: 0.5rem;
+    }
+
+    #theme-toggle {
+      border: none;
+      background: transparent;
+      padding: 0.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #1e293b;
+      transition: color 0.3s;
+    }
+    body.dark #theme-toggle { color: #ffffff; }
+
+    /* Main */
+    main {
+      flex-grow: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+      position: relative;
+      z-index: 10;
+    }
+
+    .container {
+      position: relative;
+      width: 400px;
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(20px);
+      border-radius: 1rem;
+      box-shadow: 0px 10px 30px rgba(0,0,0,0.2);
+      overflow: hidden;
+      transition: background 0.3s;
+    }
+    body.dark .container { background: rgba(30, 41, 59, 0.6); }
+
+    .forms {
+      display: flex;
+      width: 200%;
+      transition: transform 0.5s ease;
+    }
+    .form {
+      width: 50%;
+      padding: 2rem;
+      text-align: center;
+      padding-top: 2px;
+      padding-bottom: 10px;
+    }
+    .form h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .form p {
+      font-size: 0.9rem;
+      color: #64748b;
+    }
+    body.dark .form p { color: #94a3b8; }
+
+    form {
+      margin-top: 1.5rem;
+      text-align: left;
+    }
+    label {
+      font-size: 0.9rem;
+      font-weight: 500;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+    input{
+      width: 95%;
+      padding: 0.6rem;
+      border-radius: 0.5rem;
+      border: 1px solid #cbd5e1;
+      margin-bottom: 1rem;
+      background: rgba(248, 250, 252, 0.8);
+      color: inherit;
+      font-size: 1rem;
+      transition: border 0.2s;
+    }
+    select {
+      width: 100%;
+      padding: 0.6rem;
+      border-radius: 0.5rem;
+      border: 1px solid #cbd5e1;
+      margin-bottom: 1rem;
+      background: rgba(248, 250, 252, 0.8);
+      color: inherit;
+      font-size: 1rem;
+      transition: border 0.2s;
+    }
+    body.dark input, body.dark select {
+      background: rgba(51, 65, 85, 0.8);
+      border-color: #475569;
+      color: #f1f5f9;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #6366f1;
+    }
+
+    button.submit {
+      width: 100%;
+      padding: 0.8rem;
+      background: linear-gradient(to right, #020590, #38bdf8);
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: transform 0.3s, background 0.3s;
+    }
+    button.submit:hover {
+      background: #4338ca;
+      transform: scale(1.05);
+    }
+    body.dark button.submit {
+      background: linear-gradient(to right, #020590, #38bdf8);
+    }
+    body.dark button.submit:hover {
+      background: linear-gradient(to left, #020590, #38bdf8);
+    }
+
+    .toggle-link {
+      display: block;
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      color: #4f46e5;
+      text-align: center;
+      cursor: pointer;
+    }
+    .toggle-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <!-- Animated blobs -->
+  <div class="blob"></div>
+  <div class="blob"></div>
+  <div class="blob"></div>
+
+ <div style="height:100%; display:flex; flex-direction:column; position:relative; z-index:10;">
+    <!-- Navbar -->
+    <nav>
+      <div class="logo">
+        <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v11.494m-5.247-8.991l10.494 6.494M17.247 6.253L6.753 12.747m10.494 6.494L6.753 12.747" />
+        </svg>
+        <span class="gradient-text"> IntelliSchedule</span>
+      </div>
+      <button id="theme-toggle" aria-label="Toggle dark mode">
+        <svg id="theme-toggle-dark-icon" width="20" height="20" fill="currentColor" style="display:none" viewBox="0 0 20 20">
+          <path d="M17.293 13.293A8 8 0 016.707 2.707a8 8 0 1010.586 10.586z"/>
+        </svg>
+        <svg id="theme-toggle-light-icon" width="20" height="20" fill="currentColor" style="display:none" viewBox="0 0 20 20">
+          <path d="M17.293 13.293A8 8 0 016.707 2.707a8 8 0 1010.586 10.586z"/>
+        </svg>
+      </button>
+    </nav>
+
+    <!-- Main -->
+    <main>
+      <div class="container" id="form-container">
+        <div class="forms">
+          <!-- Login -->
+          <div class="form login" style="display: flex;flex-direction: column;flex-wrap: wrap;align-content: space-around;">
+            <h1 style="margin-top: 32px;">Welcome Back</h1>
+            <p>Sign in to your smart classroom dashboard</p>
+            <form>
+              <label for="role">I am a</label>
+              <select id="role" name="role">
+                <option>Administrator</option>
+                <option>Teacher</option>
+                <option>Student</option>
+              </select>
+              <label>Email</label>
+              <input type="email" placeholder="Enter your email" required>
+              <label>Password</label>
+              <input type="password" placeholder="Enter your password" required>
+              <button type="submit" class="submit" id="dashboard">Access Dashboard</button>
+            </form>
+            <span class="toggle-link" id="to-register">Not a member? Register now</span>
+          </div>
+
+          <!-- Register -->
+          <div class="form register">
+            <h1>Create Account</h1>
+            <p>Join the IntelliSchedule platform</p>
+            <form>
+              <label>Name</label>
+              <input type="text" placeholder="Enter your name" required>
+              <label>Email</label>
+              <input type="email" placeholder="Enter your email" required>
+              <label>Password</label>
+              <input type="password" placeholder="Create a password" required>
+              <label>Confirm Password</label>
+              <input type="password" placeholder="Confirm your password" required>
+              <button type="submit" class="submit">Signup</button>
+            </form>
+            <span class="toggle-link" id="to-login">Already have an account? Login</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Theme toggle
+    const btn = document.getElementById('theme-toggle');
+    const darkIcon = document.getElementById('theme-toggle-dark-icon');
+    const lightIcon = document.getElementById('theme-toggle-light-icon');
+
+    function applyTheme(isDark) {
+      if (isDark) {
+        document.body.classList.add('dark');
+        lightIcon.style.display = 'block';
+        darkIcon.style.display = 'none';
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.body.classList.remove('dark');
+        darkIcon.style.display = 'block';
+        lightIcon.style.display = 'none';
+        localStorage.setItem('theme', 'light');
+      }
+    }
+
+    const isDark = localStorage.getItem('theme') === 'dark' ||
+      (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    applyTheme(isDark);
+
+    btn.addEventListener('click', () => {
+      const isCurrentlyDark = document.body.classList.contains('dark');
+      applyTheme(!isCurrentlyDark);
+    });
+
+    // Form toggle
+    const formContainer = document.getElementById('form-container');
+    const formsWrapper = formContainer.querySelector('.forms');
+    const dash = document.getElementById('dashboard');
+    const toRegister = document.getElementById('to-register');
+    const toLogin = document.getElementById('to-login');
+
+    toRegister.addEventListener('click', () => {
+      formsWrapper.style.transform = 'translateX(-50%)';
+    });
+    dash.addEventListener('click', () => {
+     window.location.href = 'Timetable_pdf.html';
+    });
+    toLogin.addEventListener('click', () => {
+      formsWrapper.style.transform = 'translateX(0)';
+    });
+  </script>
+</body>
+</html>
